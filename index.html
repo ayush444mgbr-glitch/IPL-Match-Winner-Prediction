@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL Match Winner Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="top-line"></div>
+
+    <main class="container">
+        <header class="header">
+            <div>
+                <div class="small-label">IPL • MACHINE LEARNING PROJECT</div>
+                <h1>Match Winner Prediction</h1>
+                <p>Enter the match details and compare the predicted chances of the two teams.</p>
+            </div>
+            <div class="model-badge">Random Forest</div>
+        </header>
+
+        <section class="main-card">
+            <form id="predictionForm">
+                <div class="form-heading">
+                    <div>
+                        <h2>Match details</h2>
+                        <p>Choose the teams first, then fill in the match information.</p>
+                    </div>
+                </div>
+
+                <div class="team-row">
+                    <div class="team-box">
+                        <label for="team1">Team 1</label>
+                        <select id="team1" required>
+                            <option value="">Select team</option>
+                            {% for team in teams %}
+                            <option value="{{ team }}">{{ team }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="vs">VS</div>
+
+                    <div class="team-box">
+                        <label for="team2">Team 2</label>
+                        <select id="team2" required>
+                            <option value="">Select team</option>
+                            {% for team in teams %}
+                            <option value="{{ team }}">{{ team }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="fields-grid">
+                    <div class="field">
+                        <label for="toss_winner">Toss winner</label>
+                        <select id="toss_winner" required disabled>
+                            <option value="">Select teams first</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="toss_decision">Toss decision</label>
+                        <select id="toss_decision" required>
+                            <option value="">Select decision</option>
+                            <option value="bat">Bat</option>
+                            <option value="field">Field</option>
+                        </select>
+                    </div>
+
+                    <div class="field wide">
+                        <label for="venue">Venue</label>
+                        <input id="venue" list="venueList" placeholder="e.g. M Chinnaswamy Stadium" required>
+                        <datalist id="venueList">
+                            {% for venue in venues %}
+                            <option value="{{ venue }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <div class="field">
+                        <label for="city">City</label>
+                        <input id="city" list="cityList" placeholder="e.g. Bengaluru" required>
+                        <datalist id="cityList">
+                            {% for city in cities %}
+                            <option value="{{ city }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <div class="field">
+                        <label for="season">Season</label>
+                        <select id="season" required>
+                            {% for season in seasons %}
+                            <option value="{{ season }}">{{ season }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="match_type">Match type</label>
+                        <select id="match_type" required>
+                            {% for match_type in match_types %}
+                            <option value="{{ match_type }}">{{ match_type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button class="predict-btn" id="predictBtn" type="submit">
+                    Predict winner
+                </button>
+                <p class="form-note">The model compares only the two teams selected above.</p>
+            </form>
+
+            <div id="errorBox" class="error-box hidden"></div>
+
+            <section id="resultBox" class="result-box hidden">
+                <div class="result-top">
+                    <div>
+                        <span class="result-label">PREDICTED WINNER</span>
+                        <h2 id="winnerName">—</h2>
+                    </div>
+                    <div class="winner-mark">✓</div>
+                </div>
+
+                <div class="probability-section">
+                    <div class="probability-head">
+                        <span id="team1Name">Team 1</span>
+                        <strong id="team1Probability">0%</strong>
+                    </div>
+                    <div class="bar"><div id="team1Bar" class="bar-fill"></div></div>
+
+                    <div class="probability-head second">
+                        <span id="team2Name">Team 2</span>
+                        <strong id="team2Probability">0%</strong>
+                    </div>
+                    <div class="bar"><div id="team2Bar" class="bar-fill"></div></div>
+                </div>
+
+                <p class="result-note">These percentages are the model's estimated probabilities, not a guarantee of the actual result.</p>
+            </section>
+        </section>
+
+        <footer>
+            IPL Match Winner Prediction · B.Tech Machine Learning Project
+        </footer>
+    </main>
+
+    <script>
+        const team1 = document.getElementById("team1");
+        const team2 = document.getElementById("team2");
+        const tossWinner = document.getElementById("toss_winner");
+        const form = document.getElementById("predictionForm");
+        const predictBtn = document.getElementById("predictBtn");
+        const resultBox = document.getElementById("resultBox");
+        const errorBox = document.getElementById("errorBox");
+
+        function updateTossOptions() {
+            const first = team1.value;
+            const second = team2.value;
+
+            tossWinner.innerHTML = "";
+
+            if (!first || !second) {
+                tossWinner.disabled = true;
+                tossWinner.innerHTML = '<option value="">Select teams first</option>';
+                return;
+            }
+
+            tossWinner.disabled = false;
+            tossWinner.innerHTML = '<option value="">Select toss winner</option>';
+
+            [first, second].forEach(team => {
+                const option = document.createElement("option");
+                option.value = team;
+                option.textContent = team;
+                tossWinner.appendChild(option);
+            });
+        }
+
+        team1.addEventListener("change", updateTossOptions);
+        team2.addEventListener("change", updateTossOptions);
+
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.remove("hidden");
+            resultBox.classList.add("hidden");
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            errorBox.classList.add("hidden");
+            resultBox.classList.add("hidden");
+
+            if (team1.value === team2.value) {
+                showError("Please select two different teams.");
+                return;
+            }
+
+            predictBtn.disabled = true;
+            predictBtn.textContent = "Calculating...";
+
+            const payload = {
+                team1: team1.value,
+                team2: team2.value,
+                toss_winner: tossWinner.value,
+                toss_decision: document.getElementById("toss_decision").value,
+                venue: document.getElementById("venue").value.trim(),
+                city: document.getElementById("city").value.trim(),
+                season: document.getElementById("season").value,
+                match_type: document.getElementById("match_type").value
+            };
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Prediction failed.");
+
+                document.getElementById("winnerName").textContent = data.winner;
+                document.getElementById("team1Name").textContent = data.team1;
+                document.getElementById("team2Name").textContent = data.team2;
+                document.getElementById("team1Probability").textContent = data.team1_probability + "%";
+                document.getElementById("team2Probability").textContent = data.team2_probability + "%";
+                document.getElementById("team1Bar").style.width = data.team1_probability + "%";
+                document.getElementById("team2Bar").style.width = data.team2_probability + "%";
+
+                resultBox.classList.remove("hidden");
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.textContent = "Predict winner";
+            }
+        });
+    </script>
+</body>
+</html>

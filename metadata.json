@@ -1,0 +1,78 @@
+{
+  "original_rows": 1169,
+  "rows_used_for_model": 1146,
+  "features": [
+    "team1",
+    "team2",
+    "toss_winner",
+    "toss_decision",
+    "venue",
+    "city",
+    "season",
+    "match_type"
+  ],
+  "target": "team1_won",
+  "target_description": "1 = Team 1 wins, 0 = Team 2 wins",
+  "team_count": 15,
+  "teams": [
+    "Chennai Super Kings",
+    "Deccan Chargers",
+    "Delhi Capitals",
+    "Gujarat Lions",
+    "Gujarat Titans",
+    "Kochi Tuskers Kerala",
+    "Kolkata Knight Riders",
+    "Lucknow Super Giants",
+    "Mumbai Indians",
+    "Pune Warriors",
+    "Punjab Kings",
+    "Rajasthan Royals",
+    "Rising Pune Supergiant",
+    "Royal Challengers Bengaluru",
+    "Sunrisers Hyderabad"
+  ],
+  "test_accuracy": 0.5391,
+  "test_roc_auc": 0.5236,
+  "best_parameters": {
+    "max_depth": 10,
+    "min_samples_leaf": 2,
+    "min_samples_split": 5
+  },
+  "confusion_matrix": [
+    [
+      65,
+      48
+    ],
+    [
+      58,
+      59
+    ]
+  ],
+  "classification_report": {
+    "0": {
+      "precision": 0.5284552845528455,
+      "recall": 0.5752212389380531,
+      "f1-score": 0.5508474576271186,
+      "support": 113.0
+    },
+    "1": {
+      "precision": 0.5514018691588785,
+      "recall": 0.5042735042735043,
+      "f1-score": 0.5267857142857143,
+      "support": 117.0
+    },
+    "accuracy": 0.5391304347826087,
+    "macro avg": {
+      "precision": 0.5399285768558619,
+      "recall": 0.5397473716057787,
+      "f1-score": 0.5388165859564165,
+      "support": 230.0
+    },
+    "weighted avg": {
+      "precision": 0.5401281123741754,
+      "recall": 0.5391304347826087,
+      "f1-score": 0.5386073534056216,
+      "support": 230.0
+    }
+  }
+}
